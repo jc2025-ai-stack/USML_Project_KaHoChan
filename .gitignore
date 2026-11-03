@@ -1,3 +1,10 @@
+# Large data: unzipped transactions (~304 MB, over GitHub's 100 MB limit).
+# The zipped version data/transactions.zip is committed instead.
+data/transactions.csv
+
+# Boolean basket table exported from the notebook (~580 MB); rebuilt by 01_mining.ipynb.
+notebooks/true_false_data.csv
+
 # Python
 __pycache__/
 *.pyc
