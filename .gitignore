@@ -1,7 +1,3 @@
-# Large data: unzipped transactions (~304 MB, over GitHub's 100 MB limit).
-# The zipped version data/transactions.zip is committed instead.
-data/transactions.csv
-
 # Python
 __pycache__/
 *.pyc
