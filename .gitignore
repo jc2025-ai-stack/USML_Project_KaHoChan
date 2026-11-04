@@ -1,22 +1,14 @@
-# Large data: unzipped transactions (~304 MB, over GitHub's 100 MB limit).
-# The zipped version data/transactions.zip is committed instead.
+# Unzipped transactions (~304 MB, over GitHub's 100 MB limit).
+# The zipped data/transactions.zip is committed instead and read directly by pandas.
 data/transactions.csv
 
-# Boolean basket table exported from the notebook (~580 MB); rebuilt by 01_mining.ipynb.
-notebooks/true_false_data.csv
-
-# Python
-__pycache__/
-*.pyc
-
-# Virtual environments
-env/
+# Python virtual environment and caches
 .venv/
-venv/
+__pycache__/
+.mypy_cache/
 
 # Jupyter
 .ipynb_checkpoints/
 
-# OS / editor
-.DS_Store
+# Windows
 Thumbs.db

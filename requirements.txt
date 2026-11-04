@@ -5,14 +5,8 @@ pandas==3.0.3
 numpy==2.5.2
 mlxtend==0.25.0
 
-# Benchmarking (peak memory) and charts
-psutil==7.0.0
-matplotlib==3.11.1
-seaborn==0.13.2
-
 # Notebook
 ipykernel==7.2.0
-icecream==2.2.0
 
 # Application
 streamlit==1.61.0
