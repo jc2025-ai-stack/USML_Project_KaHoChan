@@ -10,7 +10,7 @@ All measurements come from `notebooks/01_mining.ipynb`, run on a Windows 11 lapt
 
 | Method | Time | Peak memory | Final table |
 |---|---|---|---|
-| groupby + TransactionEncoder (naive) | 20.2 s | 920 MB | 98 MB |
+| groupby + TransactionEncoder (naive) | 21.5 s | 920 MB | 98 MB |
 | factorize + numpy (kept) | 0.71 s | 436 MB | 106 MB |
 
 ## 2. Apriori with the default settings (`low_memory=False`)
@@ -40,8 +40,8 @@ All measurements come from `notebooks/01_mining.ipynb`, run on a Windows 11 lapt
 | min_support | Itemsets | Rules | Time | Peak memory | Outcome |
 |---|---|---|---|---|---|
 | 0.05 | 191 | 282 | 2.0 s | 112 MB | OK |
-| 0.02 | 658 | 3,159 | 4.7 s | 115 MB | OK |
-| 0.01 | 2,267 | 9,736 | 11.5 s | 115 MB | OK |
+| 0.02 | 658 | 3,159 | 4.8 s | 115 MB | OK |
+| 0.01 | 2,267 | 9,736 | 11.3 s | 115 MB | OK |
 | 0.005 | 7,106 | 28,433 | 26.2 s | 115 MB | OK, **kept for the app** |
 
 At min_support 0.005: 26.2 s and 115 MB with `low_memory=True`, against 562.4 s and 108,187 MB with the default settings.
