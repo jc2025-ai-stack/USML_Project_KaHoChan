@@ -3,7 +3,7 @@
 All measurements come from `notebooks/01_mining.ipynb`, run on a Windows 11 laptop with 32 GB of RAM (Python 3.14, mlxtend 0.25).
 
 - **Time:** wall-clock time of the `apriori()` call.
-- **Peak memory:** highest memory allocated during the call (`tracemalloc`), on top of the 98 MB basket table already in memory.
+- **Peak memory:** highest memory allocated during the call (`tracemalloc`), on top of the 98 MB basket table already in memory. `tracemalloc` counts virtual memory, so a value above the 32 GB of RAM means Windows moved part of it to the page file on disk.
 - **Rules:** `association_rules(metric='confidence', min_threshold=0.2)`, before the lift > 1 filter.
 
 ## 1. Wide format (Phase 1)
@@ -11,14 +11,16 @@ All measurements come from `notebooks/01_mining.ipynb`, run on a Windows 11 lapt
 | Method | Time | Peak memory | Final table |
 |---|---|---|---|
 | groupby + TransactionEncoder (naive) | 20.2 s | 920 MB | 98 MB |
-| factorize + numpy (kept) | 0.72 s | 436 MB | 106 MB |
+| factorize + numpy (kept) | 0.71 s | 436 MB | 106 MB |
 
 ## 2. Apriori with the default settings (`low_memory=False`)
 
-| min_support | Itemsets | Rules | Time | Peak memory | Outcome |
-|---|---|---|---|---|---|
-| 0.05 | 191 | – | 5.8 s | 7,676 MB | OK, but 70× the memory of `low_memory=True` |
-| 0.005 | – | – | – | – | **MemoryError** *(paste the message from the notebook)* |
+| min_support | Itemsets | Time | Peak memory | Outcome |
+|---|---|---|---|---|
+| 0.05 | 191 | 4.5 s | 7,676 MB | OK |
+| 0.02 | 658 | 10.2 s | 12,842 MB | OK |
+| 0.01 | 2,267 | 43.5 s | 24,682 MB | OK |
+| 0.005 | 7,106 | 562.4 s | 108,187 MB | First run: **MemoryError** `Unable to allocate 72.6 GiB for an array with shape (25975, 3, 1000000) and data type bool`. Second run: completed only because Windows grew the page file (31.8 GB → 43.4 GB) and compressed memory; the PC was almost frozen for 9 minutes. |
 
 ### Why it fails
 
@@ -34,8 +36,10 @@ All measurements come from `notebooks/01_mining.ipynb`, run on a Windows 11 lapt
 |---|---|---|---|---|---|
 | 0.05 | 191 | 282 | 2.0 s | 112 MB | OK |
 | 0.02 | 658 | 3,159 | 4.7 s | 115 MB | OK |
-| 0.01 | 2,267 | 9,736 | 11.0 s | 115 MB | OK |
-| 0.005 | 7,106 | 28,433 | 25.1 s | 115 MB | OK, **kept for the app** |
+| 0.01 | 2,267 | 9,736 | 11.5 s | 115 MB | OK |
+| 0.005 | 7,106 | 28,433 | 26.2 s | 115 MB | OK, **kept for the app** |
+
+At min_support 0.005: 26.2 s and 115 MB with `low_memory=True`, against 562.4 s and 108,187 MB with the default settings.
 
 ## 4. Rules kept for the app
 
