@@ -24,11 +24,16 @@ All measurements come from `notebooks/01_mining.ipynb`, run on a Windows 11 lapt
 
 ### Why it fails
 
-*(to be written)*
+- I have executed twice with min_support = 0.005. At the first time, the process raised the memory error when the process needed to allocate 78 GB (72.6 GiB) of RAM for the shape of the data array on a local PC which has only 32 GB of RAM. Then, when I executed for the second time, the PC was close to be frozen while it ran. But after almost 10 mins, the cell stopped and showed the total time spent and the peak memory request of 108 GB.
+- I may have fallen into a trap of expecting the memory error at each time the same cell was run. But I kept the honest result of intermittent memory errors which may not occur all the time.
+- My guess for the success at the second time is that the Windows OS has managed to use physical memory (RAM) and allocate enough virtual memory as well on the hard drive. So the peak memory appeared to be larger than just the physical memory size. Also, I guess that Windows was able to compress pages of the Apriori's arrays which are mostly false in the True/False table.
+- The reason for the peak memory exploding is that the default mode (low_memory = False) checks all candidates at once in one array of shape (candidates, k, baskets); if the shape is (candidates=25975, k=3, baskets=1000000), it means 25,975 triples × 3 × 1,000,000 = about 78 GB. Therefore, lower min_support means more candidates, so memory climbs and time climbs with it too.
 
 ### The fix
 
-*(to be written)*
+- The setting of low_memory = True fixes it because it minimizes the amount of memory usage (see the table in section 3).
+- **Memory stays almost the same:** The key result is the peak memory size stays almost the same. With low_memory = True, the memory does not depend on the min_support (memory = baskets × products per candidate) because only one candidate is checked at a time; with the default mode, the memory usage is much larger with (memory = candidates × baskets × products per candidate).
+- At min_support 0.005, the run takes 26.2 s and 115 MB instead of 562.4 s and 108 GB, with the same 7,106 itemsets.
 
 ## 3. Apriori with `low_memory=True`
 
@@ -55,5 +60,5 @@ The 40 others are never suggested:
 
 ## 6. Two things this approach cannot do
 
-1. *(to be written: the limitation, and what to add to fix it)*
-2. *(to be written)*
+1. **The app ignores the season.** The rules are mined on the whole year, and the recommender only looks at the basket, not the date. In January, a beer buyer is told that customers also buy Charbon de bois 45% of the time, while only 15% of January beer buyers do. The winter-only rules (for example Bière → Bretzels) are missing. **Improvement:** re-mine the rules every season (about 26s with `low_memory=True` in our project) and load the rules file of the current season.
+2. **40 of the 98 products can never be recommended.** 5 rare products (about 0.08% of baskets) fall below the minimum support of 0.5%, and 35 frequent products are bought independently, so no rule suggests them. **Improvement:** a fallback for these products, such as the most popular products of the same category, or a separate mining run with a lower min_support for the rare products.

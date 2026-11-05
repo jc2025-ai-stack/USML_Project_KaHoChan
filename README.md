@@ -99,7 +99,11 @@ Full measurements are in [`reports/benchmark.md`](reports/benchmark.md).
 - 274 rules hold in both seasons, 61 only in summer, 64 only in winter.
 - 30 of the 354 year-round rules do not hold in winter (for example Bière → Charbon de bois).
 
-*Main findings: (to be written)*
+**Main findings:**
+- Suggesting the bag by the confidence ranking adds no value, because 90% of customers buy it. The lift ranking suggests products that the basket makes more likely, so it is a useful ranking and leads to the filter for the lift > 1. (Refer to Phase 3.4 in the notebook for the demonstration)
+- The top 10 rules by lift suggest Fromage à raclette, Bouillon à fondue, Charcuteries, Cornichons and Pain baguette rustique which are all the ingredients of a meal. Lift of 9.5 to 10.2 suggests that those ingredients are bought together about 10 times more often than by chance. (Refer to Phase 3.4)
+- Summer and winter situations are different. 274 rules hold in both seasons, 61 in summer only and 64 in winter only. So about 1 in 5 rules are seasonal only. The company should re-mine at least once per season or monthly with a rolling window of recent months if possible. (Refer to the Conclusion in Phase 4.3)
+- **Memory stays almost the same:** With low_memory = True, the memory does not depend on the min_support (memory = baskets × products per candidate) because only one candidate is checked at a time; with the default mode, the memory usage is much larger with (memory = candidates × baskets × products per candidate). (Refer to Phase 2.2)
 
 ## Edge cases tested
 
@@ -132,10 +136,14 @@ All cases were checked with Streamlit's `AppTest` on the final `models/rules.jso
 
 ## Limitations
 
-*To be completed.*
+1. **Weak suggestions of the reusable bag survive the lift > 1 filter.** 1,832 kept rules suggest Sac réutilisable with a lift just above 1 (1.0001 to 1.012), so they add almost nothing. For Example: a basket with only Biscuits gets Sac réutilisable as its only suggestion, at lift 1.0, labelled "weak" (see the screenshot above). **Improvement:** raise the threshold to lift > 1.1, which removes exactly those 1,832 rules and nothing else. Finding the right amount of increasing for the filter can improve the overall performance of the recommendation. 
+2. **The app ignores the season.** The rules are mined on the whole year, and the recommender only looks at the basket, not the date. In January, a beer buyer is told that customers also buy Charbon de bois 45% of the time, while only 15% of January beer buyers do. The winter-only rules (for example Bière → Bretzels) are missing. **Improvement:** re-mine the rules every season (about 26s with `low_memory=True` in our project) and load the rules file of the current season.
+3. **40 of the 98 products can never be recommended.** 5 rare products (about 0.08% of baskets) fall below the minimum support of 0.5%, and 35 frequent products are bought independently, so no rule suggests them. **Improvement:** a fallback for these products, such as the most popular products of the same category, or a separate mining run with a lower min_support for the rare products.
 
 ## Ethical and legal framing
 
-*To be completed: Law 25 explainability, correlation vs causation (the famous retail example found in the rules), and reinforcement bias.*
+**Law 25 (Québec): explainability.** A recommendation engine is an automated decision-making system, so every suggestion must be explainable to the customer. Each suggestion in the app comes from one association rule and is shown with a plain-language sentence ("Because your basket contains X, customers who buy that also buy Y N% of the time — that is Z times more often than average.") together with its support, confidence and lift. The "Rules that fired" section lists the rules behind the suggestions. Apriori rules are transparent by design: every suggestion can be traced back to a count of real baskets, with no hidden model.
 
-*Fact for the beer-and-diapers paragraph: the rule Couches → Bière is in the kept rules with support 0.031, confidence 0.366 and lift 2.43 (beer is in 15.0% of all baskets).*
+**Correlation is not causation: beer and diapers.** The rules reproduce the famous retail example: **Couches → Bière** (support 0.031, confidence 0.366, lift 2.43). Diaper buyers put beer in their basket 36.6% of the time, against 15.0% for all customers. This proves no causal link. The rule only counts baskets where both products appear; it does not show that buying diapers makes anyone buy beer. A third factor can explain both, for example young parents doing one large weekly shopping trip for the whole household. The rule is also unstable: Bière → Couches does not hold in winter (Phase 4.2), which is not what a real cause would do. The rule can be used to place or suggest products, not to explain customer behaviour.
+
+**Reinforcement bias.** Recommending only what is already bought together locks down the catalogue. Only 58 of the 98 products can ever be suggested, and the 40 others (including the 5 rare Spécialités products) never get the extra visibility. Suggested products sell more, so the next mining run finds them in even more baskets and recommends them again: a feedback loop. The coverage measurement makes this risk visible. Ways to reduce it: a small share of suggestions reserved for products outside the rules (such as new or rare products), and monitoring the coverage at every re-mining.
